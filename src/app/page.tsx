@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Image from "next/image";
 
 export default function Home() {
@@ -97,5 +98,13 @@ export default function Home() {
         </a>
       </footer>
     </div>
+=======
+export default function Home() {
+  return (
+    <main>
+      <h1>Welcome to My Next.js App</h1>
+      <p>Start building your app here!</p>
+    </main>
+>>>>>>> db9a9e2 (Initial commit from Create Next App)
   );
 }
