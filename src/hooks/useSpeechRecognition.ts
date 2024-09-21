@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-import { initializeSpeechRecognition } from '@/app/utils/speechToTextService';
-import { getGeminiResponse } from '@/app/utils/geminiFlashApi';
+import { initializeSpeechRecognition } from '@/services/speechToTextService';
+import { getGeminiResponse } from '@/services/geminiService';
 
 interface Transcript {
   final: string[];
@@ -21,7 +21,7 @@ export default function useSpeechRecognition() {
   const processTranscript = useCallback(async (transcript: string) => {
     const sentences = transcript.match(/[^.!?]+[.!?]+/g) || [];
     for (const sentence of sentences) {
-      if (sentence.trim().endsWith('?')) {
+      if (sentence.trim().endsWith('?') || sentence.trim().endsWith('.')) {
         const response = await getGeminiResponse(sentence.trim());
         setGeminiResponses(prev => [...prev, response]);
       }

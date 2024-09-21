@@ -1,38 +1,23 @@
 'use client';
 
-import { useState } from 'react';
 import InterviewControls from '@/components/InterviewControls';
 import VideoDisplay from '@/components/VideoDisplay';
 import TranscriptDisplay from '@/components/TranscriptDisplay';
 import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
 import AudioVisualizer from '@/components/AudioVisualizer';
-import useScreenRecording from '@/hooks/useScreenRecording';
-import useSpeechRecognition from '@/hooks/useSpeechRecognition';
+import useInterviewState from '@/hooks/useInterviewState';
 
 export default function Interview() {
-  const [isRecording, setIsRecording] = useState(false);
-  const { startRecording, stopRecording, screenStream, error } = useScreenRecording();
-  const { 
-    azureTranscript, 
-    status, 
+  const {
+    isRecording,
+    screenStream,
+    azureTranscript,
+    status,
     geminiResponses,
-    startSpeechRecognition, 
-    stopSpeechRecognition 
-  } = useSpeechRecognition();
-
-  const handleStartRecording = async () => {
-    const stream = await startRecording();
-    if (stream) {
-      setIsRecording(true);
-      startSpeechRecognition(stream);
-    }
-  };
-
-  const handleStopRecording = () => {
-    stopRecording();
-    stopSpeechRecognition();
-    setIsRecording(false);
-  };
+    error,
+    handleStartRecording,
+    handleStopRecording
+  } = useInterviewState();
 
   return (
     <div>
@@ -49,7 +34,7 @@ export default function Interview() {
       </div>
       <p>Status: {status}</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {isRecording && <AudioVisualizer stream={screenStream} />}
+      {isRecording && screenStream && <AudioVisualizer stream={screenStream} />}
     </div>
   );
 }

@@ -146,12 +146,3 @@ export const initializeSpeechRecognition = (
     return null;
   }
 };
-
-// Future: Add methods for initializing and stopping WebSocket-based transcription
-// export const initializeWebSocketTranscription = (
-//   onTranscript: (transcript: string) => void,
-//   onError: (error: string) => void,
-//   onStatusChange: (status: string) => void
-// ) => { /* WebSocket setup */ };
-
-// export const stopWebSocketTranscription = (/* WebSocket reference */) => { /* Stop WebSocket */ };

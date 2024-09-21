@@ -1,6 +1,5 @@
 export const startScreenRecording = async (): Promise<MediaStream> => {
   try {
-    console.log('Starting screen recording...');
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: { displaySurface: "browser" },
       audio: {
@@ -10,9 +9,6 @@ export const startScreenRecording = async (): Promise<MediaStream> => {
       },
     });
 
-    console.log('Screen Stream Audio Tracks:', screenStream.getAudioTracks());
-
-    // Ensure we're only getting system audio, not microphone
     screenStream.getAudioTracks().forEach(track => {
       if (track.label.toLowerCase().includes('microphone')) {
         track.enabled = false;
@@ -27,12 +23,7 @@ export const startScreenRecording = async (): Promise<MediaStream> => {
 };
 
 export const stopScreenRecording = (stream: MediaStream | null) => {
-  console.log('Stopping screen recording...');
   if (stream) {
-    stream.getTracks().forEach(track => {
-      console.log(`Stopping track: ${track.kind}, ${track.label}`);
-      track.stop();
-    });
+    stream.getTracks().forEach(track => track.stop());
   }
-  console.log('Screen recording stopped.');
 };

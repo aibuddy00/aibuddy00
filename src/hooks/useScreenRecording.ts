@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { startScreenRecording, stopScreenRecording } from '@/app/utils/screenRecording';
+import { startScreenRecording, stopScreenRecording } from '@/services/screenRecordingService';
 
 interface ScreenRecordingHook {
   startRecording: () => Promise<MediaStream | null>;

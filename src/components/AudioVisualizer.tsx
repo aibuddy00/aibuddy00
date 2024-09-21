@@ -1,12 +1,11 @@
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface AudioVisualizerProps {
   stream: MediaStream | null;
 }
 
-export default function AudioVisualizer({ stream }: AudioVisualizerProps) {
+const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [volume, setVolume] = useState(0);
 
   useEffect(() => {
     if (!stream || !canvasRef.current) return;
@@ -16,12 +15,50 @@ export default function AudioVisualizer({ stream }: AudioVisualizerProps) {
     const source = audioContext.createMediaStreamSource(stream);
     source.connect(analyser);
 
+    analyser.fftSize = 2048;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
 
-    function draw() {
-      // ... (keep the existing draw function logic)
-    }
+    if (!canvasCtx) return;
+
+    const draw = () => {
+      const WIDTH = canvas.width;
+      const HEIGHT = canvas.height;
+
+      requestAnimationFrame(draw);
+
+      analyser.getByteTimeDomainData(dataArray);
+
+      canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+      canvasCtx.beginPath();
+
+      const sliceWidth = WIDTH * 1.0 / bufferLength;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * HEIGHT / 2;
+
+        if (i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+      }
+
+      canvasCtx.lineTo(canvas.width, canvas.height / 2);
+      canvasCtx.stroke();
+    };
 
     draw();
 
@@ -31,10 +68,7 @@ export default function AudioVisualizer({ stream }: AudioVisualizerProps) {
     };
   }, [stream]);
 
-  return (
-    <>
-      <canvas ref={canvasRef} width="300" height="100" />
-      <p>Volume: {volume.toFixed(2)}%</p>
-    </>
-  );
-}
+  return <canvas ref={canvasRef} width="300" height="100" />;
+};
+
+export default AudioVisualizer;
