@@ -1,44 +1,38 @@
 export const startScreenRecording = async (): Promise<MediaStream> => {
   try {
-    // Capture screen video and system audio
+    console.log('Starting screen recording...');
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: { displaySurface: "browser" },
-      audio: true, // System audio
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44100
+      },
     });
 
     console.log('Screen Stream Audio Tracks:', screenStream.getAudioTracks());
 
-    // Capture microphone audio
-    const audioStream = await navigator.mediaDevices.getUserMedia({
-      audio: true, // Microphone audio
+    // Ensure we're only getting system audio, not microphone
+    screenStream.getAudioTracks().forEach(track => {
+      if (track.label.toLowerCase().includes('microphone')) {
+        track.enabled = false;
+      }
     });
 
-    console.log('Microphone Audio Tracks:', audioStream.getAudioTracks());
-
-    // Combine both audio streams
-    const combinedAudioTracks = [...screenStream.getAudioTracks(), ...audioStream.getAudioTracks()];
-
-    const combinedStream = new MediaStream([
-      ...screenStream.getVideoTracks(),
-      ...combinedAudioTracks,
-    ]);
-
-    console.log('Combined Stream Audio Tracks:', combinedStream.getAudioTracks());
-
-    // Optional: Log each track's enabled state
-    combinedStream.getAudioTracks().forEach(track => {
-      console.log(`Track ID: ${track.id}, Enabled: ${track.enabled}`);
-    });
-
-    return combinedStream;
+    return screenStream;
   } catch (error) {
-    console.error('Error accessing media devices:', error);
+    console.error('Error in startScreenRecording:', error);
     throw new Error('Failed to start recording. Please ensure you grant the necessary permissions.');
   }
 };
 
 export const stopScreenRecording = (stream: MediaStream | null) => {
+  console.log('Stopping screen recording...');
   if (stream) {
-    stream.getTracks().forEach(track => track.stop());
+    stream.getTracks().forEach(track => {
+      console.log(`Stopping track: ${track.kind}, ${track.label}`);
+      track.stop();
+    });
   }
+  console.log('Screen recording stopped.');
 };

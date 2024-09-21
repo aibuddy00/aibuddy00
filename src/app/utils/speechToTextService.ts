@@ -1,113 +1,149 @@
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onstart: () => void;
-  onresult: (event: SpeechRecognitionEvent) => void;
-  onerror: (event: any) => void;
-  onend: () => void;
-  start: () => void;
-  stop: () => void;
-}
-
-const splitIntoSentences = (text: string): string[] => {
-  // Split the text into sentences using regex
-  return text.match(/[^.!?]+[.!?]+/g) || [text];
-};
+import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 
 export const initializeSpeechRecognition = (
-  onTranscript: (sentences: string[], isFinal: boolean) => void,
+  stream: MediaStream,
+  onTranscript: (transcript: string, isFinal: boolean) => void,
   onError: (error: string) => void,
   onStatusChange: (status: string) => void
-): { recognition: SpeechRecognition; restart: () => void } => {
-  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    console.error('Speech recognition not supported in this browser');
-    onError('Speech recognition not supported in this browser');
-    return { recognition: null as unknown as SpeechRecognition, restart: () => {} };
+) => {
+  console.log('Initializing speech recognition...');
+  const subscriptionKey = process.env.NEXT_PUBLIC_AZURE_SPEECH_KEY;
+  const region = process.env.NEXT_PUBLIC_AZURE_SPEECH_REGION;
+
+  if (!subscriptionKey || !region) {
+    console.error('Azure Speech credentials are not properly configured.');
+    onError('Azure Speech credentials are not properly configured.');
+    return null;
   }
 
-  let recognition: SpeechRecognition = new SpeechRecognition();
-  let isRecognitionActive = false;
+  try {
+    const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, region);
+    speechConfig.speechRecognitionLanguage = "en-US";
+    speechConfig.outputFormat = sdk.OutputFormat.Detailed;
+    console.log('Speech config created.');
 
-  const restart = () => {
-    if (isRecognitionActive) {
-      recognition.stop();
-    } else {
-      setupRecognition();
-      recognition.start();
-    }
-  };
+    const audioConfig = sdk.AudioConfig.fromStreamInput(stream);
+    console.log('Audio config created from stream.');
 
-  const setupRecognition = () => {
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+    console.log('Speech recognizer created.');
 
-    recognition.onstart = () => {
-      isRecognitionActive = true;
-      onStatusChange('Listening...');
-    };
+    let isReceivingAudio = false;
+    let silenceCounter = 0;
 
-    recognition.onend = () => {
-      isRecognitionActive = false;
-      onStatusChange('Recognition stopped');
-    };
+    // We'll use this function to monitor audio levels
+    const monitorAudioLevels = () => {
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      source.connect(analyser);
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let interimTranscript = '';
-      let finalTranscript = '';
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
 
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript + ' ';
+      const checkAudioLevel = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const sum = dataArray.reduce((acc, val) => acc + val, 0);
+        const average = sum / bufferLength;
+
+        if (average > 0) {
+          if (!isReceivingAudio) {
+            console.log('Receiving audio data');
+            isReceivingAudio = true;
+          }
+          silenceCounter = 0;
         } else {
-          interimTranscript += result[0].transcript;
+          silenceCounter++;
+          if (silenceCounter > 100 && isReceivingAudio) {  // About 2 seconds of silence
+            console.warn('No audio data received for a while');
+            isReceivingAudio = false;
+          }
         }
-      }
 
-      if (finalTranscript) {
-        const sentences = splitIntoSentences(finalTranscript);
-        onTranscript(sentences, true);
-      }
-      if (interimTranscript) {
-        const sentences = splitIntoSentences(interimTranscript);
-        onTranscript(sentences, false);
+        requestAnimationFrame(checkAudioLevel);
+      };
+
+      checkAudioLevel();
+
+      return () => {
+        source.disconnect();
+        audioContext.close();
+      };
+    };
+
+    const cleanupAudioMonitor = monitorAudioLevels();
+
+    recognizer.recognizing = (s, e) => {
+      console.log('Recognizing:', e.result.text);
+      onTranscript(e.result.text, false);
+    };
+
+    recognizer.recognized = (s, e) => {
+      if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
+        console.log('Recognized:', e.result.text);
+        onTranscript(e.result.text, true);
+      } else if (e.result.reason === sdk.ResultReason.NoMatch) {
+        console.log('NoMatch details:', sdk.NoMatchDetails.fromResult(e.result));
+      } else {
+        console.log('Recognition result:', sdk.ResultReason[e.result.reason]);
       }
     };
 
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
-      onError(`Speech recognition error: ${event.error}`);
-      isRecognitionActive = false;
+    recognizer.canceled = (s, e) => {
+      console.log('Speech recognition canceled:', sdk.CancellationReason[e.reason]);
+      if (e.reason === sdk.CancellationReason.Error) {
+        console.error('Speech recognition error:', e.errorDetails);
+        onError(`Error: ${e.errorDetails}`);
+      }
+      onStatusChange("Recognition canceled");
     };
-  };
 
-  setupRecognition();
-  recognition.start();
+    recognizer.sessionStarted = () => {
+      console.log('Speech recognition session started');
+      onStatusChange("Session started");
+    };
 
-  return { recognition, restart };
-};
+    recognizer.sessionStopped = () => {
+      console.log('Speech recognition session stopped');
+      onStatusChange("Session stopped");
+    };
 
-export const stopSpeechRecognition = (recognition: SpeechRecognition | null) => {
-  if (recognition) {
-    recognition.stop();
+    const start = () => {
+      console.log('Starting continuous recognition...');
+      recognizer.startContinuousRecognitionAsync(
+        () => {
+          console.log('Continuous recognition started');
+          onStatusChange("Recognition started");
+        },
+        (err) => {
+          console.error('Error starting recognition:', err);
+          onError(`Error starting recognition: ${err}`);
+        }
+      );
+    };
+
+    const stop = () => {
+      console.log('Stopping continuous recognition...');
+      recognizer.stopContinuousRecognitionAsync(
+        () => {
+          console.log('Continuous recognition stopped');
+          onStatusChange("Recognition stopped");
+          cleanupAudioMonitor();
+          recognizer.close();
+        },
+        (err) => {
+          console.error('Error stopping recognition:', err);
+          onError(`Error stopping recognition: ${err}`);
+        }
+      );
+    };
+
+    return { start, stop };
+  } catch (error) {
+    console.error('Failed to initialize speech recognition:', error);
+    onError(`Failed to initialize speech recognition: ${error}`);
+    return null;
   }
 };
 
