@@ -13,7 +13,6 @@ export default function Interview() {
   const { startRecording, stopRecording, screenStream, error } = useScreenRecording();
   const { 
     azureTranscript, 
-    localTranscript, 
     status, 
     startSpeechRecognition, 
     stopSpeechRecognition 
@@ -42,10 +41,7 @@ export default function Interview() {
         onStopRecording={handleStopRecording} 
       />
       {isRecording && <VideoDisplay stream={screenStream} />}
-      <TranscriptDisplay 
-        azureTranscript={azureTranscript} 
-        localTranscript={localTranscript} 
-      />
+      <TranscriptDisplay azureTranscript={azureTranscript} />
       <p>Status: {status}</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {isRecording && <AudioVisualizer stream={screenStream} />}

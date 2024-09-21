@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { initializeSpeechRecognition } from '@/app/utils/speechToTextService';
-import { initializeLocalSpeechRecognition } from '@/app/utils/localSpeechToText';
 
 interface Transcript {
   final: string[];
@@ -14,10 +13,8 @@ interface Recognition {
 
 export default function useSpeechRecognition() {
   const [azureTranscript, setAzureTranscript] = useState<Transcript>({ final: [], interim: [] });
-  const [localTranscript, setLocalTranscript] = useState<Transcript>({ final: [], interim: [] });
   const [status, setStatus] = useState('');
   const azureRecognitionRef = useRef<Recognition | null>(null);
-  const localRecognitionRef = useRef<Recognition | null>(null);
 
   const startSpeechRecognition = (stream: MediaStream) => {
     const azureRecognition = initializeSpeechRecognition(
@@ -33,23 +30,9 @@ export default function useSpeechRecognition() {
       (statusMessage: string) => setStatus(prev => `${prev}\nAzure: ${statusMessage}`)
     );
 
-    const localRecognition = initializeLocalSpeechRecognition(
-      (newTranscript: string, isFinal: boolean) => {
-        setLocalTranscript(prev => 
-          isFinal 
-            ? { ...prev, final: [...prev.final, newTranscript], interim: [] }
-            : { ...prev, interim: [newTranscript] }
-        );
-      },
-      (errorMessage: string) => setStatus(prev => `${prev}\nLocal Error: ${errorMessage}`),
-      (statusMessage: string) => setStatus(prev => `${prev}\nLocal: ${statusMessage}`)
-    );
-
-    if (azureRecognition && localRecognition) {
+    if (azureRecognition) {
       azureRecognitionRef.current = azureRecognition;
-      localRecognitionRef.current = localRecognition;
       azureRecognition.start();
-      localRecognition.start();
     }
   };
 
@@ -57,15 +40,11 @@ export default function useSpeechRecognition() {
     if (azureRecognitionRef.current) {
       azureRecognitionRef.current.stop();
     }
-    if (localRecognitionRef.current) {
-      localRecognitionRef.current.stop();
-    }
     setStatus('Speech recognition stopped');
   };
 
   return { 
     azureTranscript, 
-    localTranscript, 
     status, 
     startSpeechRecognition, 
     stopSpeechRecognition 
