@@ -1,21 +1,31 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { startScreenRecording, stopScreenRecording, setupWebSocket } from '../utils/screenRecording';
+import { startScreenRecording, stopScreenRecording } from '../utils/screenRecording';
+import { initializeSpeechRecognition, stopSpeechRecognition } from '../utils/speechToTextService';
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: () => void;
+  onresult: (event: any) => void;
+  onerror: (event: any) => void;
+  onend: () => void;
+  start: () => void;
+  stop: () => void;
+}
 
 export default function Interview() {
   const [isRecording, setIsRecording] = useState(false);
   const [combinedStream, setCombinedStream] = useState<MediaStream | null>(null);
-  const [fullTranscript, setFullTranscript] = useState('');
+  const [transcriptSentences, setTranscriptSentences] = useState<string[]>([]);
+  const [interimSentences, setInterimSentences] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
-  const socketRef = useRef<WebSocket | null>(null);
-
-  // Callback to handle incoming transcriptions
-  const handleTranscription = (transcription: string) => {
-    setFullTranscript((prev) => prev + ' ' + transcription);
-  };
+  const recognitionRef = useRef<{ recognition: SpeechRecognition | null; restart: () => void } | null>(null);
+  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const startRecording = async () => {
     try {
@@ -24,13 +34,43 @@ export default function Interview() {
       setIsRecording(true);
       setError(null);
 
-      // Display the screen share in the video element
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.muted = false; // Unmute to hear the shared audio
       }
 
-      // Setup WebSocket for transcription
-      socketRef.current = setupWebSocket(stream, handleTranscription);
+      const { recognition, restart } = initializeSpeechRecognition(
+        (newSentences: string[], isFinal: boolean) => {
+          if (isFinal) {
+            setTranscriptSentences(prev => [...prev, ...newSentences]);
+            setInterimSentences([]);
+          } else {
+            setInterimSentences(newSentences);
+          }
+        },
+        (errorMessage: string) => {
+          setError(errorMessage);
+        },
+        (statusMessage: string) => {
+          setStatus(statusMessage);
+        }
+      );
+
+      recognitionRef.current = { recognition, restart };
+
+      const scheduleRestart = () => {
+        if (restartTimeoutRef.current) {
+          clearTimeout(restartTimeoutRef.current);
+        }
+        restartTimeoutRef.current = setTimeout(() => {
+          if (recognitionRef.current) {
+            recognitionRef.current.restart();
+          }
+          scheduleRestart(); // Schedule the next restart
+        }, 10000); // 10 seconds
+      };
+
+      scheduleRestart(); // Start the restart cycle
 
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -43,12 +83,17 @@ export default function Interview() {
     setCombinedStream(null);
     setError(null);
     setStatus('');
-    setFullTranscript('');
+    setTranscriptSentences([]);
+    setInterimSentences([]);
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    if (socketRef.current) {
-      socketRef.current.close();
+    if (recognitionRef.current && recognitionRef.current.recognition) {
+      stopSpeechRecognition(recognitionRef.current.recognition);
+    }
+    recognitionRef.current = null;
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
     }
   };
 
@@ -69,7 +114,12 @@ export default function Interview() {
       {isRecording && (
         <div>
           <p>Recording audio and capturing screen...</p>
-          <video ref={videoRef} autoPlay muted style={{ width: '100%', maxWidth: '800px' }} />
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            controls
+            style={{ width: '100%', maxWidth: '800px' }} 
+          />
           <h2>Transcript:</h2>
           <div style={{ 
             width: '100%', 
@@ -79,7 +129,12 @@ export default function Interview() {
             padding: '10px', 
             overflowY: 'auto' 
           }}>
-            {fullTranscript}
+            {transcriptSentences.map((sentence, index) => (
+              <p key={index}>{sentence}</p>
+            ))}
+            {interimSentences.map((sentence, index) => (
+              <p key={`interim-${index}`} style={{ color: 'gray' }}>{sentence}</p>
+            ))}
           </div>
           <p>Status: {status}</p>
           {error && <p style={{ color: 'red' }}>{error}</p>}
