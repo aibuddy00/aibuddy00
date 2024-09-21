@@ -75,7 +75,7 @@ export const initializeSpeechRecognition = (
     const cleanupAudioMonitor = monitorAudioLevels();
 
     recognizer.recognizing = (s, e) => {
-      console.log('Recognizing:', e.result.text);
+      // console.log('Recognizing:', e.result.text);
       onTranscript(e.result.text, false);
     };
 

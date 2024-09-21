@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.19.0",
     "@sanity/image-url": "^1.0.2",
     "@sanity/vision": "^3.57.4",
     "microsoft-cognitiveservices-speech-sdk": "^1.40.0",

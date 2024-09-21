@@ -4,6 +4,7 @@ import { useState } from 'react';
 import InterviewControls from '@/components/InterviewControls';
 import VideoDisplay from '@/components/VideoDisplay';
 import TranscriptDisplay from '@/components/TranscriptDisplay';
+import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
 import AudioVisualizer from '@/components/AudioVisualizer';
 import useScreenRecording from '@/hooks/useScreenRecording';
 import useSpeechRecognition from '@/hooks/useSpeechRecognition';
@@ -14,6 +15,7 @@ export default function Interview() {
   const { 
     azureTranscript, 
     status, 
+    geminiResponses,
     startSpeechRecognition, 
     stopSpeechRecognition 
   } = useSpeechRecognition();
@@ -41,7 +43,10 @@ export default function Interview() {
         onStopRecording={handleStopRecording} 
       />
       {isRecording && <VideoDisplay stream={screenStream} />}
-      <TranscriptDisplay azureTranscript={azureTranscript} />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <TranscriptDisplay azureTranscript={azureTranscript} />
+        <GeminiResponseDisplay responses={geminiResponses} />
+      </div>
       <p>Status: {status}</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {isRecording && <AudioVisualizer stream={screenStream} />}
