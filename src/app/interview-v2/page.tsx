@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { FiMic, FiMicOff, FiVideo, FiVideoOff, FiPlay, FiPause } from 'react-icons/fi';
+import React, { useRef, useEffect } from 'react';
+import { FiPlay, FiPause, FiMinimize2 } from 'react-icons/fi';
 import useInterviewState from '@/hooks/useInterviewState';
 import VideoDisplay from '@/components/VideoDisplay';
 import TranscriptDisplay from '@/components/TranscriptDisplay';
@@ -20,11 +20,42 @@ const InterviewV2Page = () => {
     handleStopRecording
   } = useInterviewState();
 
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const toggleVideo = () => setIsVideoEnabled(!isVideoEnabled);
-  const toggleAudio = () => setIsAudioEnabled(!isAudioEnabled);
+  useEffect(() => {
+    if (screenStream && videoRef.current) {
+      videoRef.current.srcObject = screenStream;
+      videoRef.current.muted = true; // Keep the speaker off
+    }
+  }, [screenStream]);
+
+  useEffect(() => {
+    const handleStreamEnded = () => {
+      if (isRecording) {
+        handleStopRecording();
+      }
+    };
+
+    if (screenStream) {
+      screenStream.getVideoTracks()[0].addEventListener('ended', handleStreamEnded);
+    }
+
+    return () => {
+      if (screenStream) {
+        screenStream.getVideoTracks()[0].removeEventListener('ended', handleStreamEnded);
+      }
+    };
+  }, [screenStream, isRecording, handleStopRecording]);
+
+  const togglePictureInPicture = async () => {
+    if (videoRef.current) {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await videoRef.current.requestPictureInPicture();
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -39,13 +70,26 @@ const InterviewV2Page = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Video Feed</h2>
             {isRecording && screenStream ? (
-              <VideoDisplay stream={screenStream} />
+              <div className="relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-64 object-cover rounded-md"
+                />
+                <button
+                  onClick={togglePictureInPicture}
+                  className="absolute top-2 right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+                >
+                  <FiMinimize2 />
+                </button>
+              </div>
             ) : (
               <div className="bg-gray-200 h-64 flex items-center justify-center text-gray-500">
                 Video feed will appear here when recording starts
               </div>
             )}
-            <div className="mt-4 flex justify-center space-x-4">
+            <div className="mt-4 flex justify-center">
               <button
                 onClick={isRecording ? handleStopRecording : handleStartRecording}
                 className={`px-4 py-2 rounded-md text-white font-medium ${
@@ -53,18 +97,6 @@ const InterviewV2Page = () => {
                 }`}
               >
                 {isRecording ? 'Stop Recording' : 'Start Recording'}
-              </button>
-              <button
-                onClick={toggleVideo}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              >
-                {isVideoEnabled ? <FiVideoOff /> : <FiVideo />}
-              </button>
-              <button
-                onClick={toggleAudio}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              >
-                {isAudioEnabled ? <FiMicOff /> : <FiMic />}
               </button>
             </div>
           </div>
