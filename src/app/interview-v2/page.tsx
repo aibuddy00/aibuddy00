@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { FiPlay, FiPause, FiMinimize2 } from 'react-icons/fi';
+import { FiPlay, FiPause, FiMinimize2, FiLogOut } from 'react-icons/fi';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import useInterviewState from '@/hooks/useInterviewState';
 import VideoDisplay from '@/components/VideoDisplay';
 import TranscriptDisplay from '@/components/TranscriptDisplay';
@@ -9,11 +12,13 @@ import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
 import AudioVisualizer from '@/components/AudioVisualizer';
 
 const InterviewV2Page = () => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const {
     isRecording,
     screenStream,
     azureTranscript,
-    status,
+    status: interviewStatus,
     geminiResponses,
     error,
     handleStartRecording,
@@ -21,6 +26,12 @@ const InterviewV2Page = () => {
   } = useInterviewState();
 
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth');
+    }
+  }, [status, router]);
 
   useEffect(() => {
     if (screenStream && videoRef.current) {
@@ -57,11 +68,40 @@ const InterviewV2Page = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push('/');
+  };
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "unauthenticated") {
+    return null; // Return null while redirecting
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Interview Session</h1>
+          <div className="flex items-center">
+            {session?.user?.image && (
+              <Image src={session.user.image} alt="User" width={40} height={40} className="rounded-full mr-2" />
+            )}
+            <div className="text-sm mr-4">
+              <p className="font-semibold">{session?.user?.name || 'Guest'}</p>
+              <p className="text-gray-500">{session?.user?.email || 'Not logged in'}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-300 flex items-center"
+            >
+              <FiLogOut className="mr-2" />
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 

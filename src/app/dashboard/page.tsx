@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
@@ -13,6 +13,13 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Add this useEffect to redirect if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth');
+    }
+  }, [status, router]);
 
   const sidebarItems = [
     { href: '/dashboard', label: 'Interviews', icon: FiCalendar },
@@ -35,13 +42,16 @@ const DashboardPage = () => {
     router.push('/');
   };
 
+  const handleStartLiveInterview = () => {
+    router.push('/interview-v2');
+  };
+
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
   if (status === "unauthenticated") {
-    router.push('/auth');
-    return null;
+    return null; // Return null while redirecting
   }
 
   return (
@@ -106,7 +116,10 @@ const DashboardPage = () => {
                   <h2 className="text-lg font-medium text-orange-800 mb-1">Ready to shine?</h2>
                   <p className="text-sm text-orange-600">Start a live interview now.</p>
                 </div>
-                <button className="bg-orange-500 text-white py-2 px-4 text-sm rounded-md hover:bg-orange-600 transition duration-300 flex items-center">
+                <button 
+                  onClick={handleStartLiveInterview}
+                  className="bg-orange-500 text-white py-2 px-4 text-sm rounded-md hover:bg-orange-600 transition duration-300 flex items-center"
+                >
                   <FiPlay className="mr-2" />
                   Start Live Interview
                 </button>
@@ -157,7 +170,10 @@ const DashboardPage = () => {
                   <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded-md mr-2 hover:bg-gray-300 transition duration-300">
                     Mock Interview
                   </button>
-                  <button className="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition duration-300">
+                  <button 
+                    onClick={handleStartLiveInterview}
+                    className="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition duration-300"
+                  >
                     Live Interview
                   </button>
                 </div>
