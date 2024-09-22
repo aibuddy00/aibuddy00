@@ -14,6 +14,8 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const { setIsLoggedIn, setUsername } = useUser();
 
   useEffect(() => {
@@ -23,6 +25,8 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
     
     try {
       if (isLogin) {
@@ -35,19 +39,15 @@ const AuthPage = () => {
       } else {
         // Signup logic
         await signupUser(name, email, password);
-        alert('Signup successful! Please log in.');
+        setSuccessMessage('Signup successful! Please log in.');
         setIsLogin(true);
-        setEmail('');
+        // Keep the email, but clear other fields
         setPassword('');
         setName('');
       }
     } catch (error) {
       console.error(isLogin ? 'Login error:' : 'Signup error:', error);
-      let errorMessage = `An error occurred during ${isLogin ? 'login' : 'signup'}`;
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      alert(errorMessage);
+      setErrorMessage(error instanceof Error ? error.message : `An error occurred during ${isLogin ? 'login' : 'signup'}`);
     }
   };
 
@@ -65,6 +65,16 @@ const AuthPage = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {errorMessage && (
+            <div className="mb-4 text-sm text-red-600 bg-red-100 border border-red-400 rounded-md p-2">
+              {errorMessage}
+            </div>
+          )}
+          {successMessage && (
+            <div className="mb-4 text-sm text-green-600 bg-green-100 border border-green-400 rounded-md p-2">
+              {successMessage}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             {!isLogin && (
               <div>
@@ -149,7 +159,7 @@ const AuthPage = () => {
                 >
                   <span className="sr-only">Sign in with Google</span>
                   <svg className="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387 .307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
                   </svg>
                 </a>
               </div>
