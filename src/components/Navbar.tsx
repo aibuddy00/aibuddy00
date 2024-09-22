@@ -83,7 +83,7 @@ const Navbar = () => {
                 </button>
               </>
             ) : (
-              <Link href="/login" className="block w-full text-center px-3 py-2 rounded-md text-base font-medium bg-orange-600 text-white hover:bg-orange-700">
+              <Link href="/auth?mode=login" className="block w-full text-center px-3 py-2 rounded-md text-base font-medium bg-orange-600 text-white hover:bg-orange-700">
                 Log In
               </Link>
             )}

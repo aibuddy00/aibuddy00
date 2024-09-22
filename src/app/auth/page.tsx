@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useUser } from '../../context/UserContext';
-import { client } from '../../sanity/lib/client';
+import { loginUser, signupUser } from '../../api/auth';
 
 const AuthPage = () => {
   const searchParams = useSearchParams();
@@ -13,6 +13,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const { setIsLoggedIn, setUsername } = useUser();
 
   useEffect(() => {
@@ -23,48 +24,37 @@ const AuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isLogin) {
-      // Login logic
-      try {
-        const result = await client.fetch(
-          `*[_type == "user" && email == $email && password == $password][0]`,
-          { email, password }
-        );
-        if (result) {
-          setIsLoggedIn(true);
-          setUsername(result.name);
-          localStorage.setItem('userToken', 'dummy-token'); // In a real app, use a proper JWT
-          router.push('/dashboard');
-        } else {
-          alert('Invalid credentials');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        alert('An error occurred during login');
-      }
-    } else {
-      // Signup logic
-      try {
-        const newUser = {
-          _type: 'user',
-          name: email.split('@')[0], // Using part of email as name for simplicity
-          email,
-          password, // In a real app, never store plain text passwords
-        };
-        await client.create(newUser);
+    try {
+      if (isLogin) {
+        // Login logic
+        const result = await loginUser(email, password);
+        setIsLoggedIn(true);
+        setUsername(result.name);
+        localStorage.setItem('userToken', result._id); // In a real app, use a proper JWT
+        router.push('/dashboard');
+      } else {
+        // Signup logic
+        await signupUser(name, email, password);
         alert('Signup successful! Please log in.');
         setIsLogin(true);
-      } catch (error) {
-        console.error('Signup error:', error);
-        alert('An error occurred during signup');
+        setEmail('');
+        setPassword('');
+        setName('');
       }
+    } catch (error) {
+      console.error(isLogin ? 'Login error:' : 'Signup error:', error);
+      let errorMessage = `An error occurred during ${isLogin ? 'login' : 'signup'}`;
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      alert(errorMessage);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-100 to-red-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Image src="/logo.svg" alt="AI Buddy Logo" width={120} height={40} className="mx-auto" />
+        <Image src="/logo.png" alt="AI Buddy Logo" width={120} height={40} className="mx-auto" />
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {isLogin ? 'Sign in to AI Buddy' : 'Create your account'}
         </h2>
@@ -76,6 +66,25 @@ const AuthPage = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  Full Name
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                  />
+                </div>
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
