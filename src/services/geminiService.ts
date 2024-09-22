@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "
 
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
-  generationConfig: { responseMimeType: "application/json" },
+  generationConfig: { responseMimeType: "text/plain" },
   safetySettings: [
     { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
     { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -19,6 +19,8 @@ export async function getGeminiResponse(question: string): Promise<string> {
   }
 
   try {
+    question = "Create a markdown blog from this given transcript, explain in short at the top and then go in detail: " + question;
+    console.log("Gemini Question:", question);
     const result = await model.generateContent(question);
     const response = await result.response;
     console.log("Gemini response:", response.text());

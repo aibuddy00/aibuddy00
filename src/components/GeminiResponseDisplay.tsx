@@ -1,16 +1,20 @@
+import React from 'react';
+import ReactMarkdown from 'react-markdown';
+
 interface GeminiResponseDisplayProps {
   responses: string[];
 }
 
-export default function GeminiResponseDisplay({ responses }: GeminiResponseDisplayProps) {
+const GeminiResponseDisplay: React.FC<GeminiResponseDisplayProps> = ({ responses }) => {
   return (
-    <div>
-      <h2>Gemini Responses:</h2>
-      <div style={{ height: '200px', border: '1px solid #ccc', padding: '10px', overflowY: 'auto' }}>
-        {responses.map((response, index) => (
-          <p key={index}>{response}</p>
-        ))}
-      </div>
+    <div className="space-y-4">
+      {responses.map((response, index) => (
+        <div key={index} className="bg-gray-100 p-4 rounded-md">
+          <ReactMarkdown>{response}</ReactMarkdown>
+        </div>
+      ))}
     </div>
   );
-}
+};
+
+export default GeminiResponseDisplay;
