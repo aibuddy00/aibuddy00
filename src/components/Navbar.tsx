@@ -38,9 +38,14 @@ const Navbar = () => {
             {isLoggedIn ? (
               <UserMenu username={username} onLogout={handleLogout} />
             ) : (
-              <Link href="/login" className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition duration-300">
-                Log In
-              </Link>
+              <>
+                <Link href="/auth?mode=login" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+                  Log In
+                </Link>
+                <Link href="/auth?mode=signup" className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition duration-300">
+                  Sign Up
+                </Link>
+              </>
             )}
           </div>
           <div className="flex items-center md:hidden">

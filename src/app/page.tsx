@@ -37,8 +37,8 @@ export default function LandingPage() {
               {...fadeIn}
               transition={{ delay: 0.4 }}
             >
-              <Link href="/interview" className="bg-orange-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-orange-700 transition duration-300">
-                Unlock AI Interview Superpower
+              <Link href="/auth?mode=signup" className="bg-orange-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-orange-700 transition duration-300">
+                Get Started Free
               </Link>
             </motion.div>
           </div>
@@ -138,11 +138,41 @@ export default function LandingPage() {
             </motion.div>
           </div>
         </section>
+
+        <section className="py-20 bg-white">
+          <div className="container mx-auto px-4 text-center">
+            <motion.h2 
+              className="text-3xl font-bold text-gray-800 mb-4"
+              {...fadeIn}
+            >
+              Ready to ace your next interview?
+            </motion.h2>
+            <motion.p 
+              className="text-xl text-gray-600 mb-8"
+              {...fadeIn}
+              transition={{ delay: 0.2 }}
+            >
+              Join AI Buddy today and unlock your interview potential
+            </motion.p>
+            <motion.div
+              {...fadeIn}
+              transition={{ delay: 0.4 }}
+              className="space-x-4"
+            >
+              <Link href="/auth?mode=signup" className="bg-orange-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-orange-700 transition duration-300">
+                Sign Up
+              </Link>
+              <Link href="/auth?mode=login" className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-gray-300 transition duration-300">
+                Log In
+              </Link>
+            </motion.div>
+          </div>
+        </section>
       </main>
 
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">
-          <p>&copy; 2023 AI Buddy. All rights reserved.</p>
+          <p>&copy; 2024 AI Buddy. All rights reserved.</p>
         </div>
       </footer>
     </div>
