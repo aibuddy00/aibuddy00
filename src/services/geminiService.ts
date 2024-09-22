@@ -19,7 +19,7 @@ export async function getGeminiResponse(question: string): Promise<string> {
   }
 
   try {
-    question = "Create a markdown blog from this given transcript, explain in short at the top and then go in detail: " + question;
+    question = "There is an interview going and you are listening to the interviewer side of the interview. Try to help the candidate by giving as much answers as possible in short so that he can crack the interview. Here is the interviewer side transcript: " + question;
     console.log("Gemini Question:", question);
     const result = await model.generateContent(question);
     const response = await result.response;

@@ -106,8 +106,8 @@ const InterviewV2Page = () => {
       </header>
 
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-1/3 space-y-8">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Video Feed</h2>
               {isRecording && screenStream ? (
@@ -157,10 +157,12 @@ const InterviewV2Page = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Interview Feedback</h2>
-            <div className="h-[calc(100vh-16rem)] overflow-y-auto mb-4">
-              <GeminiResponseDisplay responses={geminiResponses} />
+          <div className="lg:w-2/3">
+            <div className="bg-white rounded-lg shadow-md p-6 h-full">
+              <h2 className="text-xl font-semibold mb-4">Interview Feedback</h2>
+              <div className="h-[calc(100vh-12rem)] overflow-y-auto mb-4">
+                <GeminiResponseDisplay responses={geminiResponses} />
+              </div>
             </div>
           </div>
         </div>
