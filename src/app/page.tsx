@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { MicrophoneIcon, LightBulbIcon, PresentationChartLineIcon } from '@heroicons/react/24/outline';
+import Navbar from '../components/Navbar';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -14,30 +15,7 @@ const fadeIn = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-100 to-red-100">
-      <header className="bg-white shadow-sm">
-        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <motion.div 
-            className="text-2xl font-bold text-orange-600"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            AI Buddy
-          </motion.div>
-          <motion.div 
-            className="space-x-4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <a href="#features" className="text-gray-600 hover:text-orange-600">Features</a>
-            <a href="#testimonials" className="text-gray-600 hover:text-orange-600">Testimonials</a>
-            <Link href="/interview" className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition duration-300">
-              Try AI Buddy
-            </Link>
-          </motion.div>
-        </nav>
-      </header>
+      <Navbar />
 
       <main>
         <section className="bg-gradient-to-r from-orange-50 to-red-50 py-20">
