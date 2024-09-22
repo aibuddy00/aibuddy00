@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { useUser } from '../../context/UserContext';
 import { loginUser, signupUser } from '../../api/auth';
 import { signIn } from 'next-auth/react';
 
-const AuthPage = () => {
+const AuthPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
@@ -213,6 +213,14 @@ const AuthPage = () => {
         <p>By signing up, you agree to our <Link href="/terms" className="text-orange-600 hover:text-orange-500">Terms of Service</Link> and <Link href="/privacy" className="text-orange-600 hover:text-orange-500">Privacy Policy</Link>.</p>
       </div>
     </div>
+  );
+};
+
+const AuthPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthPageContent />
+    </Suspense>
   );
 };
 
