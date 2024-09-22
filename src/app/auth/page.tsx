@@ -4,9 +4,8 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useUser } from '../../context/UserContext';
 import { loginUser, signupUser } from '../../api/auth';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 
 const AuthPageContent = () => {
   const searchParams = useSearchParams();
@@ -17,12 +16,18 @@ const AuthPageContent = () => {
   const [name, setName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const { setIsLoggedIn, setUsername } = useUser();
+  const { data: session } = useSession();
 
   useEffect(() => {
     const mode = searchParams?.get('mode');
     setIsLogin(mode !== 'signup');
   }, [searchParams]);
+
+  useEffect(() => {
+    if (session) {
+      router.push('/dashboard');
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,19 +37,23 @@ const AuthPageContent = () => {
     try {
       if (isLogin) {
         // Login logic
-        const result = await loginUser(email, password);
-        setIsLoggedIn(true);
-        setUsername(result.name);
-        localStorage.setItem('userToken', result._id); // In a real app, use a proper JWT
-        router.push('/dashboard');
+        const result = await signIn('credentials', {
+          redirect: false,
+          email,
+          password,
+        });
+        if (result?.error) {
+          setErrorMessage(result.error);
+        }
       } else {
         // Signup logic
-        await signupUser(name, email, password);
-        setSuccessMessage('Signup successful! Please log in.');
-        setIsLogin(true);
-        // Keep the email, but clear other fields
-        setPassword('');
-        setName('');
+        const result = await signupUser(name, email, password);
+        if (result) {
+          setSuccessMessage('Signup successful! Please log in.');
+          setIsLogin(true);
+          setPassword('');
+          setName('');
+        }
       }
     } catch (error) {
       console.error(isLogin ? 'Login error:' : 'Signup error:', error);

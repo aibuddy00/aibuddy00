@@ -3,19 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useUser } from '../context/UserContext';
+import { useSession, signOut } from 'next-auth/react';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 const Navbar = () => {
-  const { isLoggedIn, username, setIsLoggedIn, setUsername } = useUser();
+  const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername(null);
-    localStorage.removeItem('userToken');
-    // Add any additional logout logic here
+    signOut({ callbackUrl: '/' });
   };
 
   return (
@@ -35,8 +32,8 @@ const Navbar = () => {
             </div>
           </div>
           <div className="hidden md:ml-6 md:flex md:items-center">
-            {isLoggedIn ? (
-              <UserMenu username={username} onLogout={handleLogout} />
+            {status === 'authenticated' ? (
+              <UserMenu username={session.user?.name} onLogout={handleLogout} />
             ) : (
               <>
                 <Link href="/auth?mode=login" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
@@ -75,7 +72,7 @@ const Navbar = () => {
             <MobileNavLink href="/mock-interview">AI Mock Interview</MobileNavLink>
             <MobileNavLink href="/resources">Resources</MobileNavLink>
             <MobileNavLink href="/question-bank">Question Bank</MobileNavLink>
-            {isLoggedIn ? (
+            {status === 'authenticated' ? (
               <>
                 <MobileNavLink href="/dashboard">Dashboard</MobileNavLink>
                 <button onClick={handleLogout} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
@@ -106,7 +103,7 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
   </Link>
 );
 
-const UserMenu = ({ username, onLogout }: { username: string | null; onLogout: () => void }) => (
+const UserMenu = ({ username, onLogout }: { username: string | null | undefined; onLogout: () => void }) => (
   <Menu as="div" className="ml-3 relative">
     <div>
       <Menu.Button className="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
