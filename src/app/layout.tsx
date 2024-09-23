@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from './providers';
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
-  title: "My Next.js App",
-  description: "A clean start for my Next.js project",
+  title: "AI Buddy",
+  description: "Crush job interviews with AI",
 };
 
 export default function RootLayout({
@@ -16,6 +18,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>{children}</Providers>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

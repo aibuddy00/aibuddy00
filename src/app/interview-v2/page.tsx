@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useInterviewState from '@/hooks/useInterviewState';
 import VideoDisplay from '@/components/VideoDisplay';
-import TranscriptDisplay from '@/components/TranscriptDisplay';
 import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
 import AudioVisualizer from '@/components/AudioVisualizer';
 
@@ -127,7 +126,7 @@ const InterviewV2Page = () => {
                 </div>
               ) : (
                 <div className="bg-gray-200 h-64 flex items-center justify-center text-gray-500">
-                  Video feed will appear here when recording starts
+                  Video feed will appear here
                 </div>
               )}
               <div className="mt-4 flex justify-center">
@@ -143,9 +142,9 @@ const InterviewV2Page = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Transcript</h2>
+              <h2 className="text-xl font-semibold mb-4">Interview Transcript</h2>
               <div className="h-40 overflow-y-auto">
-                <TranscriptDisplay azureTranscript={azureTranscript} />
+                <GeminiResponseDisplay responses={azureTranscript.final} />
               </div>
             </div>
 
@@ -159,7 +158,7 @@ const InterviewV2Page = () => {
 
           <div className="lg:w-2/3">
             <div className="bg-white rounded-lg shadow-md p-6 h-full">
-              <h2 className="text-xl font-semibold mb-4">Interview Feedback</h2>
+              <h2 className="text-xl font-semibold mb-4">AI Buddy</h2>
               <div className="h-[calc(100vh-12rem)] overflow-y-auto mb-4">
                 <GeminiResponseDisplay responses={geminiResponses} />
               </div>
