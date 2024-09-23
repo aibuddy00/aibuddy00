@@ -10,6 +10,13 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
   useEffect(() => {
     if (!stream || !canvasRef.current) return;
 
+    // Check if the stream has at least one audio track
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      console.warn('No audio tracks found in the MediaStream.');
+      return;
+    }
+
     const audioContext = new AudioContext();
     const analyser = audioContext.createAnalyser();
     const source = audioContext.createMediaStreamSource(stream);
