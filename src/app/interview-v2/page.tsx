@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useInterviewState from '@/hooks/useInterviewState';
+import useDraggableWidth from '@/hooks/useDraggableWidth';
 import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
 
 const InterviewV2Page = () => {
@@ -23,6 +24,7 @@ const InterviewV2Page = () => {
   } = useInterviewState();
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { width: leftColumnWidth, handleMouseDown } = useDraggableWidth(400, 300, 800);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -104,68 +106,71 @@ const InterviewV2Page = () => {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-1/3 space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Video Feed</h2>
-              {isRecording && screenStream ? (
-                <div className="relative">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-64 object-cover rounded-md"
-                  />
-                  <button
-                    onClick={togglePictureInPicture}
-                    className="absolute top-2 right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
-                  >
-                    <FiMinimize2 />
-                  </button>
-                </div>
-              ) : (
-                <div className="bg-gray-200 h-64 flex items-center justify-center text-gray-500">
-                  Video feed will appear here
-                </div>
-              )}
-              <div className="mt-4 flex justify-center">
+      <main className="flex-grow container mx-auto px-4 py-8 flex">
+        <div style={{ width: `${leftColumnWidth}px` }} className="space-y-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Video Feed</h2>
+            {isRecording && screenStream ? (
+              <div className="relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-64 object-cover rounded-md"
+                />
                 <button
-                  onClick={isRecording ? handleStopRecording : handleStartRecording}
-                  className={`px-4 py-2 rounded-md text-white font-medium ${
-                    isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
-                  }`}
+                  onClick={togglePictureInPicture}
+                  className="absolute top-2 right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
                 >
-                  {isRecording ? 'Stop Recording' : 'Start Recording'}
+                  <FiMinimize2 />
                 </button>
               </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Live Transcription</h2>
-              <div className="h-20 overflow-y-auto bg-gray-100 p-2 rounded">
-                {azureTranscript.interim ? (
-                  <p className="text-gray-700">{azureTranscript.interim}</p>
-                ) : (
-                  <p className="text-gray-500 italic">Waiting for speech...</p>
-                )}
+            ) : (
+              <div className="bg-gray-200 h-64 flex items-center justify-center text-gray-500">
+                Video feed will appear here
               </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Interview Transcript</h2>
-              <div className="h-40 overflow-y-auto">
-                <GeminiResponseDisplay responses={azureTranscript.final} />
-              </div>
+            )}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={isRecording ? handleStopRecording : handleStartRecording}
+                className={`px-4 py-2 rounded-md text-white font-medium ${
+                  isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+                }`}
+              >
+                {isRecording ? 'Stop Recording' : 'Start Recording'}
+              </button>
             </div>
           </div>
 
-          <div className="lg:w-2/3">
-            <div className="bg-white rounded-lg shadow-md p-6 h-full">
-              <h2 className="text-xl font-semibold mb-4">AI Buddy</h2>
-              <div className="h-[calc(100vh-12rem)] overflow-y-auto mb-4">
-                <GeminiResponseDisplay responses={geminiResponses} />
-              </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Live Transcription</h2>
+            <div className="h-20 overflow-y-auto bg-gray-100 p-2 rounded">
+              {azureTranscript.interim ? (
+                <p className="text-gray-700">{azureTranscript.interim}</p>
+              ) : (
+                <p className="text-gray-500 italic">Waiting for speech...</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Interview Transcript</h2>
+            <div className="h-40 overflow-y-auto">
+              <GeminiResponseDisplay responses={azureTranscript.final} />
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="w-2 bg-gray-300 cursor-col-resize hover:bg-gray-400 transition-colors"
+          onMouseDown={handleMouseDown}
+        />
+
+        <div className="flex-grow">
+          <div className="bg-white rounded-lg shadow-md p-6 h-full">
+            <h2 className="text-xl font-semibold mb-4">AI Buddy</h2>
+            <div className="h-[calc(100vh-12rem)] overflow-y-auto mb-4">
+              <GeminiResponseDisplay responses={geminiResponses} />
             </div>
           </div>
         </div>
