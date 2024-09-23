@@ -22,7 +22,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
     const source = audioContext.createMediaStreamSource(stream);
     source.connect(analyser);
 
-    analyser.fftSize = 2048;
+    analyser.fftSize = 32; // Smaller fftSize for a simpler visual
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
@@ -37,34 +37,14 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
 
       requestAnimationFrame(draw);
 
-      analyser.getByteTimeDomainData(dataArray);
+      analyser.getByteFrequencyData(dataArray);
 
-      canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+      canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+      const barHeight = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
 
-      canvasCtx.beginPath();
-
-      const sliceWidth = WIDTH * 1.0 / bufferLength;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = v * HEIGHT / 2;
-
-        if (i === 0) {
-          canvasCtx.moveTo(x, y);
-        } else {
-          canvasCtx.lineTo(x, y);
-        }
-
-        x += sliceWidth;
-      }
-
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
-      canvasCtx.stroke();
+      canvasCtx.fillStyle = 'rgb(0, 255, 0)';
+      canvasCtx.fillRect(0, HEIGHT - barHeight, WIDTH, barHeight);
     };
 
     draw();
@@ -75,7 +55,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
     };
   }, [stream]);
 
-  return <canvas ref={canvasRef} width="300" height="100" />;
+  return <canvas ref={canvasRef} width="50" height="20" />; // Very small size
 };
 
 export default AudioVisualizer;

@@ -19,11 +19,9 @@ const GeminiResponseDisplay: React.FC<GeminiResponseDisplayProps> = ({ responses
     <div ref={containerRef} className="space-y-4 overflow-y-auto p-4 bg-gray-50 rounded-lg shadow-md flex-grow h-full">
       {responses.map((response, index) => (
         <div key={index} className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
-          <MarkdownPreview source={response} style={{
-              padding: 8,
-              backgroundColor: "white",
-              color: "black",
-            }} />
+          <MarkdownPreview
+            source={response}
+          />
         </div>
       ))}
       <div ref={bottomRef} />

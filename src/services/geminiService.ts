@@ -19,7 +19,10 @@ export async function getGeminiResponse(question: string): Promise<string> {
   }
 
   try {
-    question = "There is an interview going and you are listening to the interviewer side of the interview. Try to help the candidate by giving as much answers as possible in short so that he can crack the interview. Here is the interviewer side transcript: " + question;
+    question = `There is an interview going and you are listening to the interviewer side of the interview. 
+    Try to help the candidate by giving short answers and to the point(limit the responses in bullet points) 
+    so that he can crack the interview. Only markdown language is supported.
+    Here is the interviewer side transcript: ${question}`;
     console.log("Gemini Question:", question);
     const result = await model.generateContent(question);
     const response = await result.response;
