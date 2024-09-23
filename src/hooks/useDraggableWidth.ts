@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 
-const useDraggableWidth = (initialWidth: number, minWidth: number, maxWidth: number) => {
+const useDraggableWidth = (initialWidth: number) => {
   const [width, setWidth] = useState(initialWidth);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -15,13 +15,10 @@ const useDraggableWidth = (initialWidth: number, minWidth: number, maxWidth: num
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       if (isDragging) {
-        const newWidth = e.clientX;
-        if (newWidth >= minWidth && newWidth <= maxWidth) {
-          setWidth(newWidth);
-        }
+        setWidth(e.clientX);
       }
     },
-    [isDragging, minWidth, maxWidth]
+    [isDragging]
   );
 
   useEffect(() => {

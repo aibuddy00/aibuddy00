@@ -4,8 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { FiCalendar, FiCheckCircle, FiPlus, FiSearch, FiGrid, FiList, FiMoreVertical, FiUpload, FiPlay, FiLogOut } from 'react-icons/fi';
+import { FiCalendar, FiCheckCircle, FiPlus, FiSearch, FiGrid, FiList, FiMoreVertical, FiUpload, FiPlay, FiLogOut, FiClock } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
+import { client } from '@/sanity/lib/client';
+
+// Add this near the top of the file, after the imports
+interface Interview {
+  _id: string;
+  title: string;
+  date: string;
+  duration: number;
+  interviewType: string;
+}
 
 const DashboardPage = () => {
   const { data: session, status } = useSession();
@@ -13,6 +23,7 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const [interviews, setInterviews] = useState<Interview[]>([]);
 
   // Add this useEffect to redirect if not authenticated
   useEffect(() => {
@@ -20,6 +31,19 @@ const DashboardPage = () => {
       router.push('/auth');
     }
   }, [status, router]);
+
+  useEffect(() => {
+    const fetchInterviews = async () => {
+      const result = await client.fetch(`*[_type == "interview" && user._ref == $userId] | order(date desc)`, {
+        userId: session?.user?.id,
+      });
+      setInterviews(result);
+    };
+
+    if (session?.user?.id) {
+      fetchInterviews();
+    }
+  }, [session?.user?.id]);
 
   const sidebarItems = [
     { href: '/dashboard', label: 'Interviews', icon: FiCalendar },
@@ -43,7 +67,7 @@ const DashboardPage = () => {
   };
 
   const handleStartLiveInterview = () => {
-    router.push('/interview-v2');
+    router.push('/interview');
   };
 
   if (status === "loading") {
@@ -180,24 +204,61 @@ const DashboardPage = () => {
               </div>
 
               {/* Interview list or empty state */}
-              <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                <div className="px-4 py-5 sm:p-6 text-center text-gray-500">
-                  <FiPlus className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No interviews</h3>
-                  <p className="mt-1 text-sm text-gray-500">Get started by creating a new interview or try these quick actions:</p>
-                  <div className="mt-6 flex flex-wrap justify-center">
-                    {quickActions.map((action, index) => (
-                      <button
-                        key={index}
-                        className="m-2 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                      >
-                        <action.icon className="-ml-1 mr-2 h-5 w-5 text-gray-400" />
-                        {action.label}
-                      </button>
+              {interviews.length > 0 ? (
+                <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                  <ul className="divide-y divide-gray-200">
+                    {interviews.map((interview) => (
+                      <li key={interview._id}>
+                        <Link href={`/interview/${interview._id}`} className="block hover:bg-gray-50">
+                          <div className="px-4 py-4 sm:px-6">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium text-orange-600 truncate">{interview.title}</p>
+                              <div className="ml-2 flex-shrink-0 flex">
+                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                  {interview.interviewType}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-2 sm:flex">
+                              <div className="sm:flex">
+                                <p className="flex items-center text-sm text-gray-500">
+                                  <FiCalendar className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
+                                  {new Date(interview.date).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                                <FiClock className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
+                                <p>
+                                  {interview.duration} minutes
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
                     ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                  <div className="px-4 py-5 sm:p-6 text-center text-gray-500">
+                    <FiPlus className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No interviews</h3>
+                    <p className="mt-1 text-sm text-gray-500">Get started by creating a new interview or try these quick actions:</p>
+                    <div className="mt-6 flex flex-wrap justify-center">
+                      {quickActions.map((action, index) => (
+                        <button
+                          key={index}
+                          className="m-2 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        >
+                          <action.icon className="-ml-1 mr-2 h-5 w-5 text-gray-400" />
+                          {action.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </main>
