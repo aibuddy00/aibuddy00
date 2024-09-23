@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { FiPlay, FiPause, FiMinimize2, FiLogOut } from 'react-icons/fi';
+import { FiMinimize2, FiLogOut } from 'react-icons/fi';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useInterviewState from '@/hooks/useInterviewState';
-import VideoDisplay from '@/components/VideoDisplay';
 import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
 import AudioVisualizer from '@/components/AudioVisualizer';
 
@@ -57,6 +56,13 @@ const InterviewV2Page = () => {
     };
   }, [screenStream, isRecording, handleStopRecording]);
 
+  useEffect(() => {
+    if (error) {
+      console.error('Interview Error:', error);
+    }
+    console.log('Interview Status:', interviewStatus);
+  }, [error, interviewStatus]);
+
   const togglePictureInPicture = async () => {
     if (videoRef.current) {
       if (document.pictureInPictureElement) {
@@ -72,13 +78,8 @@ const InterviewV2Page = () => {
     router.push('/');
   };
 
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
-
-  if (status === "unauthenticated") {
-    return null; // Return null while redirecting
-  }
+  if (status === "loading") return <div>Loading...</div>;
+  if (status === "unauthenticated") return null;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -164,18 +165,6 @@ const InterviewV2Page = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {error && (
-          <div className="mt-8 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Error:</strong>
-            <span className="block sm:inline"> {error}</span>
-          </div>
-        )}
-
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Session Status</h2>
-          <p className="text-lg">{interviewStatus}</p>
         </div>
       </main>
     </div>

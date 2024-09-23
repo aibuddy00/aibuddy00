@@ -1,18 +1,32 @@
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import React, { useEffect, useRef } from 'react';
+import MarkdownPreview from "@uiw/react-markdown-preview";
 
 interface GeminiResponseDisplayProps {
   responses: string[];
 }
 
 const GeminiResponseDisplay: React.FC<GeminiResponseDisplayProps> = ({ responses }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [responses]);
+
   return (
-    <div className="space-y-4">
+    <div ref={containerRef} className="space-y-4 overflow-y-auto p-4 bg-gray-50 rounded-lg shadow-md flex-grow h-full">
       {responses.map((response, index) => (
-        <div key={index} className="bg-gray-100 p-4 rounded-md">
-          <ReactMarkdown>{response}</ReactMarkdown>
+        <div key={index} className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
+          <MarkdownPreview source={response} style={{
+              padding: 8,
+              backgroundColor: "white",
+              color: "black",
+            }} />
         </div>
       ))}
+      <div ref={bottomRef} />
     </div>
   );
 };
