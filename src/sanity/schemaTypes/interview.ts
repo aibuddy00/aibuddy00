@@ -20,18 +20,6 @@ export default {
       to: [{type: 'user'}],
     },
     {
-      name: 'azureTranscript',
-      title: 'Azure Transcript',
-      type: 'array',
-      of: [{type: 'text'}],
-    },
-    {
-      name: 'geminiResponses',
-      title: 'Gemini Responses',
-      type: 'array',
-      of: [{type: 'text'}],
-    },
-    {
       name: 'duration',
       title: 'Duration (minutes)',
       type: 'number',
@@ -47,6 +35,31 @@ export default {
           {title: 'Case Study', value: 'caseStudy'},
         ],
       },
+    },
+    {
+      name: 'qaExchange',
+      title: 'Q&A Exchange',
+      type: 'array',
+      of: [{
+        type: 'object',
+        fields: [
+          {
+            name: 'question',
+            title: 'Question',
+            type: 'text',
+          },
+          {
+            name: 'answer',
+            title: 'Answer',
+            type: 'text',
+          },
+          {
+            name: 'aiResponse',
+            title: 'AI Response',
+            type: 'text',
+          }
+        ]
+      }]
     },
   ],
 };

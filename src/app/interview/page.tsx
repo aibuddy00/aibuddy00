@@ -97,6 +97,13 @@ const InterviewPage = () => {
       return;
     }
 
+    // Combine azureTranscript and geminiResponses into qaExchange format
+    const qaExchange = azureTranscript.final.map((question, index) => ({
+      question,
+      answer: '', // We don't have separate answer field in current setup
+      aiResponse: geminiResponses[index] || ''
+    }));
+
     // Save interview data to Sanity
     const interviewData = {
       _type: 'interview',
@@ -104,11 +111,10 @@ const InterviewPage = () => {
       date: new Date().toISOString(),
       user: {
         _type: 'reference',
-        _ref: session?.user?.id, // Assuming you have the user's Sanity ID in the session
+        _ref: session?.user?.id,
       },
-      azureTranscript: azureTranscript.final,
-      geminiResponses,
-      duration: Math.round((Date.now() - startTime) / 60000), // Duration in minutes
+      qaExchange,
+      duration: Math.round((Date.now() - startTime) / 60000),
       interviewType: 'technical', // You might want to add a way for users to select this
     };
 

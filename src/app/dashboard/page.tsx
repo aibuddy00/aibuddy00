@@ -7,6 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { FiCalendar, FiCheckCircle, FiPlus, FiSearch, FiGrid, FiList, FiMoreVertical, FiUpload, FiPlay, FiLogOut, FiClock } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import { client } from '@/sanity/lib/client';
+import { formatDistanceToNow } from 'date-fns';
 
 // Add this near the top of the file, after the imports
 interface Interview {
@@ -16,6 +17,11 @@ interface Interview {
   duration: number;
   interviewType: string;
 }
+
+// Add this helper function before the DashboardPage component
+const getTimeElapsed = (date: string) => {
+  return formatDistanceToNow(new Date(date), { addSuffix: true });
+};
 
 const DashboardPage = () => {
   const { data: session, status } = useSession();
@@ -223,10 +229,10 @@ const DashboardPage = () => {
                               <div className="sm:flex">
                                 <p className="flex items-center text-sm text-gray-500">
                                   <FiCalendar className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                                  {new Date(interview.date).toLocaleDateString()}
+                                  {getTimeElapsed(interview.date)}
                                 </p>
                               </div>
-                              <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                              <div className="mt-2 ml-4 flex items-center text-sm text-gray-500 sm:mt-0">
                                 <FiClock className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
                                 <p>
                                   {interview.duration} minutes
