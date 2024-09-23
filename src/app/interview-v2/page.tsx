@@ -162,14 +162,14 @@ const InterviewV2Page = () => {
         </div>
 
         <div
-          className="w-2 bg-gray-300 cursor-col-resize hover:bg-gray-400 transition-colors"
+          className="w-4 bg-gray-100 cursor-col-resize hover:bg-gray-400 transition-colors"
           onMouseDown={handleMouseDown}
         />
 
         <div className="flex-grow">
           <div className="bg-white rounded-lg shadow-md p-6 h-full">
             <h2 className="text-xl font-semibold mb-4">AI Buddy</h2>
-            <div className="h-[calc(100vh-12rem)] overflow-y-auto mb-4">
+            <div className="h-[calc(100%-2.5rem)] overflow-y-auto mb-4">
               <GeminiResponseDisplay responses={geminiResponses} />
             </div>
           </div>
