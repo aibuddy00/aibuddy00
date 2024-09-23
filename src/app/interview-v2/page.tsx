@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useInterviewState from '@/hooks/useInterviewState';
 import GeminiResponseDisplay from '@/components/GeminiResponseDisplay';
-import AudioVisualizer from '@/components/AudioVisualizer';
 
 const InterviewV2Page = () => {
   const { data: session, status } = useSession();
@@ -143,18 +142,22 @@ const InterviewV2Page = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4">Live Transcription</h2>
+              <div className="h-20 overflow-y-auto bg-gray-100 p-2 rounded">
+                {azureTranscript.interim ? (
+                  <p className="text-gray-700">{azureTranscript.interim}</p>
+                ) : (
+                  <p className="text-gray-500 italic">Waiting for speech...</p>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Interview Transcript</h2>
               <div className="h-40 overflow-y-auto">
                 <GeminiResponseDisplay responses={azureTranscript.final} />
               </div>
             </div>
-
-            {isRecording && screenStream && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4">Audio Visualizer</h2>
-                <AudioVisualizer stream={screenStream} />
-              </div>
-            )}
           </div>
 
           <div className="lg:w-2/3">
