@@ -13,15 +13,24 @@ const model = genAI.getGenerativeModel({
   ],
 });
 
+export function storeInterviewMetadata(metadata: string) {
+  localStorage.setItem("interviewMetadata", metadata);
+}
+
+export function getInterviewMetadata(): string {
+  return localStorage.getItem("interviewMetadata") || "";
+} 
+
 export async function getGeminiResponse(question: string): Promise<string> {
   if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
     throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not set");
   }
 
   try {
+    const metadata = getInterviewMetadata();
     question = `There is an interview going and you are listening to the interviewer side of the interview. 
-    Try to help the candidate by giving short answers and to the point(limit the responses in bullet points) 
-    so that he can crack the interview. Only markdown language is supported.
+    Try to help the candidate by giving short answers and to the point (limit the responses in bullet points). 
+    Here are some additional details about the candidate and interview: ${metadata}
     Here is the interviewer side transcript: ${question}`;
     console.log("Gemini Question:", question);
     const result = await model.generateContent(question);

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { storeInterviewMetadata } from '../../services/geminiService';
 
 const PreInterviewChecklistPage = () => {
   const [step, setStep] = useState(1);
@@ -41,8 +42,16 @@ const PreInterviewChecklistPage = () => {
   };
 
   const handleSubmit = () => {
-    // Handle form submission
-    router.push('/dashboard');
+    const metadata = JSON.stringify({
+      company,
+      role,
+      companyDetails,
+      jobDescription,
+      resume: resume ? resume.name : null
+    });
+
+    storeInterviewMetadata(metadata);
+    router.push('/interview');
   };
 
   return (
@@ -111,7 +120,7 @@ const PreInterviewChecklistPage = () => {
               >
                 Back
               </button>
-              <Link href="/dashboard" className="block text-center text-sm text-gray-600 mt-4">Skip This Step</Link>
+              <Link href="/interview" className="block text-center text-sm text-gray-600 mt-4">Skip This Step</Link>
             </div>
           </>
         )}
@@ -141,7 +150,7 @@ const PreInterviewChecklistPage = () => {
               >
                 Back
               </button>
-              <Link href="/dashboard" className="block text-center text-sm text-gray-600 mt-4">Skip This Step</Link>
+              <Link href="/interview" className="block text-center text-sm text-gray-600 mt-4">Skip This Step</Link>
             </div>
           </>
         )}
