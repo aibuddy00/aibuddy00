@@ -192,20 +192,9 @@ const InterviewPage = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Live Transcription</h2>
-            <div className="h-20 overflow-y-auto bg-gray-100 p-2 rounded">
-              {azureTranscript.interim ? (
-                <p className="text-gray-700">{azureTranscript.interim}</p>
-              ) : (
-                <p className="text-gray-500 italic">Waiting for speech...</p>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Interview Transcript</h2>
             <div className="h-40 overflow-y-auto">
-              <GeminiResponseDisplay responses={azureTranscript.final} />
+              <GeminiResponseDisplay responses={[...azureTranscript.final, (azureTranscript.interim.length > 0 ? azureTranscript.interim[0] : "") + "..."]} />
             </div>
           </div>
         </div>
@@ -218,7 +207,7 @@ const InterviewPage = () => {
         <div className="flex-grow" style={{ minWidth: '100px' }}>
           <div className="bg-white rounded-lg shadow-md p-6 h-full">
             <h2 className="text-xl font-semibold mb-4">AI Buddy</h2>
-            <div className="h-[calc(100%-2.5rem)] overflow-y-auto mb-4">
+            <div className="h-[calc(76vh-2rem)]">
               <GeminiResponseDisplay responses={geminiResponses} />
             </div>
           </div>
