@@ -49,10 +49,13 @@ const AuthPageContent = () => {
         // Signup logic
         const result = await signupUser(name, email, password);
         if (result) {
-          setSuccessMessage('Signup successful! Please log in.');
+          setSuccessMessage('Signup successful! Redirecting to onboarding...');
           setIsLogin(true);
           setPassword('');
           setName('');
+          setTimeout(() => {
+            router.push('/onboarding'); // Redirect to onboarding page after signup
+          }, 2000);
         }
       }
     } catch (error) {
