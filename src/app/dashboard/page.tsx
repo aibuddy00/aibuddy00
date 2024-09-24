@@ -73,7 +73,7 @@ const DashboardPage = () => {
   };
 
   const handleStartLiveInterview = () => {
-    router.push('/interview');
+    router.push('/preinterviewchecklist');
   };
 
   if (status === "loading") {
