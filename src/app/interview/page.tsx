@@ -121,6 +121,8 @@ const InterviewPage = () => {
     try {
       await client.create(interviewData);
       console.log('Interview data saved to Sanity');
+      // Redirect to the interview done page after saving
+      router.push('/interviewdone');
     } catch (error) {
       console.error('Error saving interview data:', error);
     }
