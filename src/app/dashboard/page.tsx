@@ -26,7 +26,7 @@ const getTimeElapsed = (date: string) => {
 const DashboardPage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState('completed'); // Set default tab to 'completed'
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -158,19 +158,16 @@ const DashboardPage = () => {
 
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex">
-                {['upcoming', 'completed'].map((tab) => (
-                  <button
-                    key={tab}
-                    className={`${
-                      activeTab === tab
-                        ? 'border-orange-500 text-orange-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${tab === 'completed' ? 'ml-8' : ''}`}
-                    onClick={() => setActiveTab(tab)}
-                  >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
+                <button
+                  className={`${
+                    activeTab === 'completed'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  onClick={() => setActiveTab('completed')}
+                >
+                  Completed
+                </button>
               </nav>
             </div>
 
@@ -197,9 +194,6 @@ const DashboardPage = () => {
                   </button>
                 </div>
                 <div>
-                  <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded-md mr-2 hover:bg-gray-300 transition duration-300">
-                    Mock Interview
-                  </button>
                   <button 
                     onClick={handleStartLiveInterview}
                     className="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition duration-300"
