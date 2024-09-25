@@ -50,6 +50,7 @@ export async function getGeminiResponse(question: string): Promise<string> {
 
     const prompt = `There is an interview going and you are listening to the interviewer side of the interview. 
     Try to help the candidate by giving short answers and to the point (limit the responses in bullet points unless it is not possible to answer in a bullet point). 
+    Assume there can be translation issues and try to correct the correct answers where possible. Focus on the interview job role and answer in that context.
     Here are some additional details about the candidate and interview: ${metadata}
     Here is earlier transcript (last 3 interactions):
     ${metadataEarlier}
