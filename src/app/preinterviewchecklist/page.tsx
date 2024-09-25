@@ -212,12 +212,12 @@ const PreInterviewChecklistPage = () => {
         {step === 4 && (
           <>
             <h1 className="text-2xl font-bold text-center mb-6">You're all set!</h1>
-            <p className="text-center text-gray-600 mb-6">Thank you for providing the details. You can now proceed to your dashboard.</p>
+            <p className="text-center text-gray-600 mb-6">Thank you for providing the details. You can now proceed to your interview.</p>
             <button
               onClick={handleSubmit}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
             >
-              Go to Dashboard
+              Go to Interview
             </button>
           </>
         )}

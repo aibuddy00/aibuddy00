@@ -194,7 +194,7 @@ const InterviewPage = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Interview Transcript</h2>
             <div className="h-40 overflow-y-auto">
-              <GeminiResponseDisplay responses={[...azureTranscript.final, (azureTranscript.interim.length > 0 ? azureTranscript.interim[0] : "") + "..."]} />
+              <GeminiResponseDisplay responses={[...azureTranscript.final, ...azureTranscript.interim]} />
             </div>
           </div>
         </div>
